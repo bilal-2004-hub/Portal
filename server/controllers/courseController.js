@@ -1,11 +1,12 @@
 const Course = require('../models/Course');
+const handleControllerError = require('../utils/handleControllerError');
 
 const getCourses = async (req, res) => {
   try {
     const courses = await Course.find().sort({ createdAt: -1 });
     return res.json({ success: true, data: courses });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch courses.' });
+    return handleControllerError(res, error, 'Unable to fetch courses.');
   }
 };
 
@@ -18,7 +19,7 @@ const getCourseById = async (req, res) => {
 
     return res.json({ success: true, data: course });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch course.' });
+    return handleControllerError(res, error, 'Unable to fetch course.');
   }
 };
 

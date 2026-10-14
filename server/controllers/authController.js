@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const handleControllerError = require('../utils/handleControllerError');
 
 const generateStudentId = () => {
   return `STU-${Date.now().toString().slice(-6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -61,7 +62,7 @@ const signup = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Server error during signup.' });
+    return handleControllerError(res, error, 'Server error during signup.');
   }
 };
 
@@ -101,7 +102,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Server error during login.' });
+    return handleControllerError(res, error, 'Server error during login.');
   }
 };
 
@@ -117,7 +118,7 @@ const getMe = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Server error while fetching profile.' });
+    return handleControllerError(res, error, 'Server error while fetching profile.');
   }
 };
 

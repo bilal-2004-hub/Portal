@@ -4,6 +4,7 @@ const Enrollment = require('../models/Enrollment');
 const Certificate = require('../models/Certificate');
 const Course = require('../models/Course');
 const generateCertificateId = require('../utils/generateCertificateId');
+const handleControllerError = require('../utils/handleControllerError');
 
 const getQuizByCourse = async (req, res) => {
   try {
@@ -33,7 +34,7 @@ const getQuizByCourse = async (req, res) => {
 
     return res.json({ success: true, data: safeQuiz });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch quiz.' });
+    return handleControllerError(res, error, 'Unable to fetch quiz.');
   }
 };
 
@@ -114,7 +115,7 @@ const submitQuiz = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to submit quiz.' });
+    return handleControllerError(res, error, 'Unable to submit quiz.');
   }
 };
 
@@ -123,7 +124,7 @@ const getQuizAttempts = async (req, res) => {
     const attempts = await QuizAttempt.find({ studentId: req.user._id, courseId: req.params.courseId }).sort({ attemptedAt: -1 });
     return res.json({ success: true, data: attempts });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch quiz attempts.' });
+    return handleControllerError(res, error, 'Unable to fetch quiz attempts.');
   }
 };
 
@@ -170,7 +171,7 @@ const getQuizAttemptReview = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to load quiz review.' });
+    return handleControllerError(res, error, 'Unable to load quiz review.');
   }
 };
 

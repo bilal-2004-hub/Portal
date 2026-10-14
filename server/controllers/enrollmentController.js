@@ -1,5 +1,6 @@
 const Enrollment = require('../models/Enrollment');
 const Course = require('../models/Course');
+const handleControllerError = require('../utils/handleControllerError');
 
 const enrollInCourse = async (req, res) => {
   try {
@@ -46,7 +47,7 @@ const enrollInCourse = async (req, res) => {
       data: enrollment,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to enroll in course.' });
+    return handleControllerError(res, error, 'Unable to enroll in course.');
   }
 };
 
@@ -59,7 +60,7 @@ const getMyCourses = async (req, res) => {
 
     return res.json({ success: true, data: enrollments });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch your courses.' });
+    return handleControllerError(res, error, 'Unable to fetch your courses.');
   }
 };
 
@@ -76,7 +77,7 @@ const getEnrollmentByCourse = async (req, res) => {
 
     return res.json({ success: true, data: enrollment });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch enrollment.' });
+    return handleControllerError(res, error, 'Unable to fetch enrollment.');
   }
 };
 

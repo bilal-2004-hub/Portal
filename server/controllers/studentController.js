@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Enrollment = require('../models/Enrollment');
 const Certificate = require('../models/Certificate');
+const handleControllerError = require('../utils/handleControllerError');
 
 const getProfile = async (req, res) => {
   try {
@@ -25,7 +26,7 @@ const getProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch profile.' });
+    return handleControllerError(res, error, 'Unable to fetch profile.');
   }
 };
 
@@ -53,7 +54,7 @@ const updateProfile = async (req, res) => {
       data: profile,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to update profile.' });
+    return handleControllerError(res, error, 'Unable to update profile.');
   }
 };
 

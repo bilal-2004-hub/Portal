@@ -1,11 +1,12 @@
 const Certificate = require('../models/Certificate');
+const handleControllerError = require('../utils/handleControllerError');
 
 const getCertificates = async (req, res) => {
   try {
     const certificates = await Certificate.find({ studentId: req.user._id }).sort({ issuedAt: -1 });
     return res.json({ success: true, data: certificates });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch certificates.' });
+    return handleControllerError(res, error, 'Unable to fetch certificates.');
   }
 };
 
@@ -18,7 +19,7 @@ const getCertificateById = async (req, res) => {
 
     return res.json({ success: true, data: certificate });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to fetch certificate.' });
+    return handleControllerError(res, error, 'Unable to fetch certificate.');
   }
 };
 
@@ -40,7 +41,7 @@ const verifyCertificate = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Unable to verify certificate.' });
+    return handleControllerError(res, error, 'Unable to verify certificate.');
   }
 };
 

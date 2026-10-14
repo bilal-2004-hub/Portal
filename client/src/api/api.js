@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const apiBaseUrl = configuredApiUrl || (import.meta.env.DEV ? 'http://localhost:5000' : '');
+const API_URL = apiBaseUrl
+  ? `${apiBaseUrl.replace(/(?:\/api)+\/?$/i, '').replace(/\/+$/, '')}/api`
+  : '';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -10,6 +14,21 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  if (!API_URL) {
+    return Promise.reject(new Error('VITE_API_URL must be set to the deployed backend URL.'));
+  }
+
+  if (!import.meta.env.DEV) {
+    try {
+      const apiOrigin = new URL(API_URL).origin;
+      if (apiOrigin === window.location.origin || /^(localhost|127\.0\.0\.1)$/.test(new URL(API_URL).hostname)) {
+        return Promise.reject(new Error('VITE_API_URL must point to the deployed backend, not localhost or this frontend.'));
+      }
+    } catch (error) {
+      return Promise.reject(new Error('VITE_API_URL must be an absolute backend URL.'));
+    }
+  }
+
   const token = localStorage.getItem('studentPortalToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

@@ -4,10 +4,14 @@ const User = require('../models/User');
 const protect = async (req, res, next) => {
   let token;
 
+  if (!process.env.JWT_SECRET) {
+    return res.status(503).json({ success: false, message: 'Authentication is not configured.' });
+  }
+
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'studentPortalSecret');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select('-passwordHash');
 
       if (!req.user) {

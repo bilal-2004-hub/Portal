@@ -280,51 +280,50 @@ const seedDatabase = async () => {
     await connectDB();
   }
 
-  const existingCourses = await Course.find({}).lean();
-  const existingQuizzes = await Quiz.find({}).lean();
-  const existingUsers = await User.find({}).lean();
-  const needsCourseTypeRefresh = existingCourses.some((course) => !course.type || !['Core', 'Elective'].includes(course.type));
-  const needsQuizRefresh = existingQuizzes.some((quiz) => !quiz.questions || quiz.questions.length < 10);
-
-  if (existingCourses.length > 0 && !needsCourseTypeRefresh && !needsQuizRefresh && existingUsers.length > 0) {
-    console.log('Course, quiz, and user data already exist and are complete. Skipping seed.');
-    return;
-  }
-
-  await Quiz.deleteMany({});
-  await Course.deleteMany({});
-  await User.deleteMany({});
-
   const createdCourses = [];
   for (const course of seedCourses) {
-    const createdCourse = await Course.create(course);
+    const createdCourse = await Course.findOneAndUpdate(
+      { title: course.title },
+      { $setOnInsert: course },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
     createdCourses.push(createdCourse);
   }
 
   for (const course of createdCourses) {
     const quizDoc = createQuizForCourse(course);
-    await Quiz.create(quizDoc);
+    await Quiz.findOneAndUpdate(
+      { courseId: course._id },
+      { $setOnInsert: quizDoc },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
   }
 
-  const demoPassword = await bcrypt.hash('password123', 10);
-  await User.create({
-    name: 'Daniyal',
-    email: 'student@example.com',
-    passwordHash: demoPassword,
-    studentId: 'STU-696277-L2BH',
-    phone: '0300-1234567',
-    role: 'student',
-  });
+  if (process.env.NODE_ENV !== 'production'
+    && process.env.SEED_DEMO_USER === 'true'
+    && !(await User.exists({ email: 'student@example.com' }))) {
+    const demoPassword = await bcrypt.hash('password123', 10);
+    await User.create({
+      name: 'Daniyal',
+      email: 'student@example.com',
+      passwordHash: demoPassword,
+      studentId: 'STU-696277-L2BH',
+      phone: '0300-1234567',
+      role: 'student',
+    });
+  }
 
-  console.log('Seed data inserted successfully.');
+  console.log('Missing course and quiz seed data inserted; existing records were preserved.');
 };
 
 if (require.main === module) {
   seedDatabase()
-    .then(() => process.exit(0))
+    .then(() => mongoose.disconnect())
     .catch((error) => {
-      console.error('Seed failed:', error);
-      process.exit(1);
+      console.error('Seed failed:', error.name);
+      mongoose.disconnect().finally(() => {
+        process.exitCode = 1;
+      });
     });
 }
 
