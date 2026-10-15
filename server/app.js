@@ -36,7 +36,7 @@ app.use(async (req, res, next) => {
     await connectDB();
     return next();
   } catch (error) {
-    console.error('Database connection failed:', error.name);
+    console.error('Database connection failed:', error.message || error);
     return res.status(503).json({
       success: false,
       message: 'Database is unavailable. Check the backend database configuration.',
