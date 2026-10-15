@@ -57,6 +57,14 @@ app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/certificates', certificateRoutes);
 
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Student Portal API is running.',
+    health: '/api/health',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Student Portal server is running.', database: 'connected' });
 });
