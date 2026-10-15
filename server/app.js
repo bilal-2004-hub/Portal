@@ -13,22 +13,38 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
 app.set('trust proxy', 1);
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+const configuredOrigins = (process.env.CLIENT_URL || '')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
   .filter(Boolean);
+
+const defaultOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+];
+
+const allowedOrigins = [...new Set([...configuredOrigins, ...defaultOrigins])];
 
 app.use(helmet());
 app.use(express.json());
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.trim().replace(/\/+$/, '');
+
+    if (
+      allowedOrigins.includes(cleanOrigin) ||
+      cleanOrigin.endsWith('.vercel.app')
+    ) {
       return callback(null, true);
     }
 
-    return callback(new Error('Origin is not allowed by CORS'));
+    return callback(new Error(`Origin ${origin} is not allowed by CORS`));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(async (req, res, next) => {

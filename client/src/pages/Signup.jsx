@@ -29,7 +29,7 @@ const Signup = () => {
       await signup(formData);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to create account.');
+      setError(err.response?.data?.message || err.message || 'Unable to create account.');
     } finally {
       setLoading(false);
     }
